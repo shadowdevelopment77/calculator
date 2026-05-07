@@ -16,43 +16,6 @@ function updateDisplay(main,mini) {
     display.value = main;
     miniDisplay.value = mini;
 }
-// function appendToDisplay(input){    
-//     const isOperator = ['+', '-', '*', '/'].includes(input);
-
-//     if (isOperator){
-//         if (currentNumber === '' && previousNumber === '') {
-//             alert('Please input the number first!');
-//             return;
-//         }
-//         if (currentNumber != '' && previousNumber != '' && operator!== '') {
-//             const result = calculate(true);
-//             previousNumber = String(result);
-//             currentNumber = '';
-//         } else if (currentNumber != ''){
-//             previousNumber = currentNumber;
-//             currentNumber = '';
-//         }
-//     }
-//     operator = value;
-//     jusCalculated = false;
-
-//     const operatorSymbol = {'+': '+', '-': '−', '*': '×', '/': '÷' }[operator];
-//     updateDisplay('', `${previousNumber} ${operatorSymbol}`);
-//     return;
-//     } 
-
-//     if (jusCalculated) {
-//         previousNumber = '';
-//         operator = '';
-//         jusCalculated = false;
-//     }
-
-//     if (value === '.' && currentNumber.includes('.')) return;
-
-//     if (value === '0' && currentNumber === '0') return;
-//     if(value != '.' && currentNumber === '0') currentNumber = '';
-
-//     currentNumber += value;
 function appendToDisplay(value) {
   const isOperator = ['+', '-', '*', '/'].includes(value);
  
@@ -133,14 +96,15 @@ function calculate(silent = false) {
   // ── Repeat last operation if "=" is pressed again ─────────────────────────
   if (!silent && justCalculated && lastOperator !== '' && lastOperand !== '') {
     const prev   = parseFloat(display.value);
-    const operand = parseFloat(lastOperand);
     const result = operate(prev, lastOperand, lastOperator);
  
     const symbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[lastOperator];
-    updateDisplay(result, `${prev} ${symbol} ${operand} =`);
+
+    previousNumber = String(result);
+    updateDisplay(result, `${prev} ${symbol} ${lastOperand}`);
     // keep justCalculated = true so further "=" keeps repeating
     return;
-  }
+  } 
  
   // ── Normal calculation ─────────────────────────────────────────────────────
   if (previousNumber === '' || currentNumber === '' || operator === '') return;
@@ -152,7 +116,7 @@ function calculate(silent = false) {
   lastOperator = operator;
   lastOperand  = currentNumber;
  
-  updateDisplay(result, `${previousNumber} ${symbol} ${currentNumber} =`);
+  updateDisplay(result,`${previousNumber} ${symbol} ${currentNumber} `);
  
   // Reset state, keep result on display
   previousNumber  = String(result);
@@ -162,7 +126,10 @@ function calculate(silent = false) {
  
   if (silent) return result; // used by internal chained calls
 }
- 
+
+function round(num){
+    return Math.round(num* 1e10) / 1e10;
+}
 // ─── operate ─────────────────────────────────────────────────────────────────
 // Pure math: given two numbers and an operator, return the result.
 function operate(a, b, op) {
@@ -178,6 +145,3 @@ function operate(a, b, op) {
   }
 }
 
-function round(num){
-    return Math.round(num* 1e10) / 1e10;
-}
