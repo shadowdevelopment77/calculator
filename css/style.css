@@ -89,3 +89,13 @@ button:active{
 .equal-btn:active{
     background-color: hsl(24, 100%, 75%);
 }
+
+.powered-on{
+    background-color: hsl(120, 100%, 35%);
+}
+.powered-on:hover{
+    background-color:  hsl(120, 100%, 60%) ;
+}
+.powered-off {
+    background-color: hsl(0, 0%, 40%);
+}

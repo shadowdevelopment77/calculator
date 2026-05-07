@@ -4,6 +4,7 @@ let operator = '';
 let justCalculated = false;
 let lastOperator ='';
 let lastOperand = '';
+let isPoweredOn =false;
 
 
 
@@ -24,6 +25,7 @@ function operatorHelper(symbol) {
     
 }
 function appendToDisplay(value) {
+    if (!isPoweredOn) return;
   const isOperator = ['+', '-', '*', '/'].includes(value);
  
   // ── OPERATOR clicked ──────────────────────────────────────────────────────
@@ -96,6 +98,7 @@ function clearDisplay() {
 
 
 function calculate(silent = false) {
+    if (!isPoweredOn) return;
  
   // ── Repeat last operation if "=" is pressed again ─────────────────────────
   if (!silent && justCalculated && lastOperator !== '' && lastOperand !== '') {
@@ -148,6 +151,7 @@ function operate(a, b, op) {
 }
 
 function deleteChar(remove) {
+    if (!isPoweredOn) return;
     if(currentNumber.length <=1){
         currentNumber = '';
         display.value = '';
@@ -156,4 +160,17 @@ function deleteChar(remove) {
         currentNumber = currentNumber.slice(0, -1)
         display.value = currentNumber;
     }
+}
+
+function togglePower() {
+    isPoweredOn = !isPoweredOn;
+    const btn = document.getElementById('power-btn')
+     if (isPoweredOn) {
+    btn.classList.add('powered-on');
+    btn.classList.remove('powered-off');
+  } else {
+    clearDisplay();
+    btn.classList.add('powered-off');
+    btn.classList.remove('powered-on');
+  }
 }
