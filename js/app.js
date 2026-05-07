@@ -67,7 +67,11 @@ function appendToDisplay(value) {
   }
  
   // Prevent multiple dots in one number
-  if (value === '.' && currentNumber.includes('.')) return;
+  if (value === '.') {
+    if (currentNumber.includes('.')) return;
+    if(currentNumber === '') currentNumber = '0';
+  }
+  
  
   // Prevent leading zeros like "007"
   if (value === '0' && currentNumber === '0') return;
@@ -158,6 +162,7 @@ function deleteChar(remove) {
         return
     } else{
         currentNumber = currentNumber.slice(0, -1)
+        if (currentNumber === '0') currentNumber = '';
         display.value = currentNumber;
     }
 }
