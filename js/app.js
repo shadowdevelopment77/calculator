@@ -1,42 +1,183 @@
-let currentNumber = "";
-let previousNumber = "";
-let operator = "";
-let shouldResetDisplay = false;
+let currentNumber = '';
+let previousNumber = '';
+let operator = '';
+let justCalculated = false;
+let lastOperator ='';
+let lastOperand = '';
 
 
 
 const display = document.getElementById("display");
 const miniDisplay = document.getElementById("mini-display")
 
-function appendToDisplay(input){
-    if ([`+`, `-`, `*`, `/`].includes(input)) {
-        operator = input;
-        miniDisplay.value =input;
-        shouldResetDisplay = true;
-    } else{
-        if (shouldResetDisplay) {
-            display.value = input;
-            shouldResetDisplay = false
-        } else {
-            display.value += input;
-        }
-        currentNumber = display.value;
-    } 
+
+
+function updateDisplay(main,mini) {
+    display.value = main;
+    miniDisplay.value = mini;
 }
+// function appendToDisplay(input){    
+//     const isOperator = ['+', '-', '*', '/'].includes(input);
+
+//     if (isOperator){
+//         if (currentNumber === '' && previousNumber === '') {
+//             alert('Please input the number first!');
+//             return;
+//         }
+//         if (currentNumber != '' && previousNumber != '' && operator!== '') {
+//             const result = calculate(true);
+//             previousNumber = String(result);
+//             currentNumber = '';
+//         } else if (currentNumber != ''){
+//             previousNumber = currentNumber;
+//             currentNumber = '';
+//         }
+//     }
+//     operator = value;
+//     jusCalculated = false;
+
+//     const operatorSymbol = {'+': '+', '-': '−', '*': '×', '/': '÷' }[operator];
+//     updateDisplay('', `${previousNumber} ${operatorSymbol}`);
+//     return;
+//     } 
+
+//     if (jusCalculated) {
+//         previousNumber = '';
+//         operator = '';
+//         jusCalculated = false;
+//     }
+
+//     if (value === '.' && currentNumber.includes('.')) return;
+
+//     if (value === '0' && currentNumber === '0') return;
+//     if(value != '.' && currentNumber === '0') currentNumber = '';
+
+//     currentNumber += value;
+function appendToDisplay(value) {
+  const isOperator = ['+', '-', '*', '/'].includes(value);
+ 
+  // ── OPERATOR clicked ──────────────────────────────────────────────────────
+  if (isOperator) {
+ 
+    // Rule: user must have a number before pressing an operator
+    if (currentNumber === '' && previousNumber === '') {
+      alert('Please input the number first!');
+      return;
+    }
+ 
+    // If there's already a pending calculation (two numbers + operator),
+    // calculate it first before applying the new operator.
+    if (currentNumber !== '' && previousNumber !== '' && operator !== '') {
+      const result = calculate(true); // silent calculate, returns value
+      previousNumber = String(result);
+      currentNumber  = '';
+    } else if (currentNumber !== '') {
+      // First operator: move currentInput → previousInput
+      previousNumber = currentNumber;
+      currentNumber  = '';
+    }
+    // If just calculated, previousInput is already the result — just switch operator
+ 
+    operator       = value;
+    justCalculated = false;
+ 
+    // Show expression on mini-display, clear main display
+    const operatorSymbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[operator];
+    updateDisplay('', `${previousNumber} ${operatorSymbol}`);
+    return;
+  }
+ 
+  // ── NUMBER (or dot) clicked ───────────────────────────────────────────────
+ 
+  // After "=" was pressed: start a brand-new calculation
+  if (justCalculated) {
+    previousNumber  = '';
+    operator       = '';
+    justCalculated = false;
+  }
+ 
+  // Prevent multiple dots in one number
+  if (value === '.' && currentNumber.includes('.')) return;
+ 
+  // Prevent leading zeros like "007"
+  if (value === '0' && currentNumber === '0') return;
+  if (value !== '.' && currentNumber === '0') currentNumber = '';
+ 
+  currentNumber += value;
+ 
+  // Update main display; keep mini-display showing the operator expression
+  const operatorSymbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[operator] || '';
+  const mini = operator
+    ? `${previousNumber} ${operatorSymbol}`
+    : miniDisplay.value; // leave it as-is if no operator yet
+  updateDisplay(currentNumber, mini);
+}
+
+
+
 
 function clearDisplay() {
-    display.value = "";
-    miniDisplay.value ="";
-    currentNumber = "";
-    previousNumber = "";
-    operator = "";
-    shouldResetDisplay = false;
+    updateDisplay('', '');
+    currentNumber = '';
+    previousNumber = '';
+    operator = '';
+    justCalculated = false;
+    lastOperand = '';
+    lastOperator = '';
+
 }
 
-function calculate() {
-    try {
-        display.value = eval(display.value)
-    } catch (error) {
-        display.value = "Error"
-    }
+
+function calculate(silent = false) {
+ 
+  // ── Repeat last operation if "=" is pressed again ─────────────────────────
+  if (!silent && justCalculated && lastOperator !== '' && lastOperand !== '') {
+    const prev   = parseFloat(display.value);
+    const operand = parseFloat(lastOperand);
+    const result = operate(prev, lastOperand, lastOperator);
+ 
+    const symbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[lastOperator];
+    updateDisplay(result, `${prev} ${symbol} ${operand} =`);
+    // keep justCalculated = true so further "=" keeps repeating
+    return;
+  }
+ 
+  // ── Normal calculation ─────────────────────────────────────────────────────
+  if (previousNumber === '' || currentNumber === '' || operator === '') return;
+ 
+  const result = operate(previousNumber, currentNumber, operator);
+  const symbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[operator];
+ 
+  // Save for "=" repeat
+  lastOperator = operator;
+  lastOperand  = currentNumber;
+ 
+  updateDisplay(result, `${previousNumber} ${symbol} ${currentNumber} =`);
+ 
+  // Reset state, keep result on display
+  previousNumber  = String(result);
+  currentNumber   = '';
+  operator       = '';
+  justCalculated = true;
+ 
+  if (silent) return result; // used by internal chained calls
+}
+ 
+// ─── operate ─────────────────────────────────────────────────────────────────
+// Pure math: given two numbers and an operator, return the result.
+function operate(a, b, op) {
+  a = parseFloat(a);
+  b = parseFloat(b);
+  switch (op) {
+    case '+': return round(a + b);
+    case '-': return round(a - b);
+    case '*': return round(a * b);
+    case '/':
+      if (b === 0) { alert("Can't divide by zero!"); return a; }
+      return round(a / b);
+  }
+}
+
+function round(num){
+    return Math.round(num* 1e10) / 1e10;
 }
