@@ -8,13 +8,20 @@ let lastOperand = '';
 
 
 const display = document.getElementById("display");
-const miniDisplay = document.getElementById("mini-display")
+const miniDisplay = document.getElementById("mini-display");
 
 
 
 function updateDisplay(main,mini) {
     display.value = main;
     miniDisplay.value = mini;
+}
+
+
+function operatorHelper(symbol) {
+    const symbols =  { '+': '+', '-': '−', '*': '×', '/': '÷' }
+    return symbols[symbol] || '';
+    
 }
 function appendToDisplay(value) {
   const isOperator = ['+', '-', '*', '/'].includes(value);
@@ -44,9 +51,7 @@ function appendToDisplay(value) {
     operator       = value;
     justCalculated = false;
  
-    // Show expression on mini-display, clear main display
-    const operatorSymbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[operator];
-    updateDisplay('', `${previousNumber} ${operatorSymbol}`);
+    updateDisplay('', `${previousNumber} ${operatorHelper(operator)}`);
     return;
   }
  
@@ -69,9 +74,8 @@ function appendToDisplay(value) {
   currentNumber += value;
  
   // Update main display; keep mini-display showing the operator expression
-  const operatorSymbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[operator] || '';
   const mini = operator
-    ? `${previousNumber} ${operatorSymbol}`
+    ? `${previousNumber} ${operatorHelper(operator)}`
     : miniDisplay.value; // leave it as-is if no operator yet
   updateDisplay(currentNumber, mini);
 }
@@ -97,11 +101,10 @@ function calculate(silent = false) {
   if (!silent && justCalculated && lastOperator !== '' && lastOperand !== '') {
     const prev   = parseFloat(display.value);
     const result = operate(prev, lastOperand, lastOperator);
- 
-    const symbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[lastOperator];
 
     previousNumber = String(result);
-    updateDisplay(result, `${prev} ${symbol} ${lastOperand}`);
+
+    updateDisplay(result, `${prev} ${operatorHelper(lastOperator)} ${lastOperand}`);
     // keep justCalculated = true so further "=" keeps repeating
     return;
   } 
@@ -110,13 +113,12 @@ function calculate(silent = false) {
   if (previousNumber === '' || currentNumber === '' || operator === '') return;
  
   const result = operate(previousNumber, currentNumber, operator);
-  const symbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[operator];
  
   // Save for "=" repeat
   lastOperator = operator;
   lastOperand  = currentNumber;
  
-  updateDisplay(result,`${previousNumber} ${symbol} ${currentNumber} `);
+  updateDisplay(result,`${previousNumber} ${operatorHelper(operator)} ${currentNumber} `);
  
   // Reset state, keep result on display
   previousNumber  = String(result);
@@ -145,3 +147,13 @@ function operate(a, b, op) {
   }
 }
 
+function deleteChar(remove) {
+    if(currentNumber.length <=1){
+        currentNumber = '';
+        display.value = '';
+        return
+    } else{
+        currentNumber = currentNumber.slice(0, -1)
+        display.value = currentNumber;
+    }
+}
